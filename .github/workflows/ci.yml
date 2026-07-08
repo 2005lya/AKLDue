@@ -45,3 +45,10 @@ jobs:
 
       - name: Run tests
         run: dotnet test backend/AKLDue.sln --configuration Release
+      
+      - name: Build API container
+        run: |
+          docker build \
+            --file backend/Akldue.Api/Dockerfile \
+            --tag akldue-api:ci \
+            backend
