@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akldue.Api", "Akldue.Api\Akldue.Api.csproj", "{0060D9DB-DFF6-4E8C-8B12-F3D52EDC35EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akldue.Api.Tests", "Akldue.Api.Tests\Akldue.Api.Tests.csproj", "{03204BF4-87ED-445E-B328-4C81D7483E65}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0060D9DB-DFF6-4E8C-8B12-F3D52EDC35EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0060D9DB-DFF6-4E8C-8B12-F3D52EDC35EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0060D9DB-DFF6-4E8C-8B12-F3D52EDC35EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0060D9DB-DFF6-4E8C-8B12-F3D52EDC35EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03204BF4-87ED-445E-B328-4C81D7483E65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03204BF4-87ED-445E-B328-4C81D7483E65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03204BF4-87ED-445E-B328-4C81D7483E65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03204BF4-87ED-445E-B328-4C81D7483E65}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

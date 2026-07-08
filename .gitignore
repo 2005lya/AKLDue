@@ -41,3 +41,15 @@ app-example
 # generated native folders
 /ios
 /android
+
+
+.env
+.env.*
+!.env.example
+
+# .NET build output
+**/bin/
+**/obj/
+
+# Local backend configuration
+**/appsettings.Development.json
