@@ -21,7 +21,9 @@ public class ClerkUserMiddleware(
         }
 
         var subject = context.User.FindFirstValue("sub");
-        var email = context.User.FindFirstValue("email");
+        var email = context.User.FindFirstValue("email")
+            ?.Trim()
+            .ToLowerInvariant();
 
         if (
             string.IsNullOrWhiteSpace(subject) ||
@@ -47,7 +49,8 @@ public class ClerkUserMiddleware(
 
         if (user is null)
         {
-            user = await userManager.FindByEmailAsync(email);
+            user = await userManager.FindByEmailAsync(email)
+                ?? await userManager.FindByNameAsync(email);
 
             if (user is null)
             {
@@ -65,6 +68,20 @@ public class ClerkUserMiddleware(
 
                 if (!createResult.Succeeded)
                 {
+                    user = await userManager.FindByEmailAsync(email)
+                        ?? await userManager.FindByNameAsync(email);
+
+                    if (user is not null)
+                    {
+                        await LinkClerkUserAsync(
+                            userManager,
+                            user,
+                            subject,
+                            email
+                        );
+                    }
+                    else
+                    {
                     logger.LogError(
                         "Could not create local user for Clerk {Subject}.",
                         subject
@@ -74,24 +91,17 @@ public class ClerkUserMiddleware(
                         StatusCodes.Status500InternalServerError;
 
                     return;
+                    }
                 }
-            }
-            else if (
-                user.ExternalAuthId is not null &&
-                user.ExternalAuthId != subject
-            )
-            {
-                context.Response.StatusCode =
-                    StatusCodes.Status403Forbidden;
-
-                return;
             }
             else
             {
-                user.ExternalAuthId = subject;
-
-                var updateResult =
-                    await userManager.UpdateAsync(user);
+                var updateResult = await LinkClerkUserAsync(
+                    userManager,
+                    user,
+                    subject,
+                    email
+                );
 
                 if (!updateResult.Succeeded)
                 {
@@ -111,7 +121,11 @@ public class ClerkUserMiddleware(
                 )
             );
 
-            if (!loginResult.Succeeded)
+            if (
+                !loginResult.Succeeded &&
+                await userManager.FindByLoginAsync("Clerk", subject)
+                    is null
+            )
             {
                 context.Response.StatusCode =
                     StatusCodes.Status500InternalServerError;
@@ -131,5 +145,20 @@ public class ClerkUserMiddleware(
         }
 
         await next(context);
+    }
+
+    private static async Task<IdentityResult> LinkClerkUserAsync(
+        UserManager<ApplicationUser> userManager,
+        ApplicationUser user,
+        string subject,
+        string email
+    )
+    {
+        user.UserName = email;
+        user.Email = email;
+        user.EmailConfirmed = true;
+        user.ExternalAuthId = subject;
+
+        return await userManager.UpdateAsync(user);
     }
 }

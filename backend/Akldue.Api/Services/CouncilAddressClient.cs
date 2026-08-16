@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Memory;
 using System.Globalization;
+using System.Net.Http.Headers;
 using AngleSharp.Html.Parser;
 
 namespace Akldue.Api.Services;
@@ -150,10 +151,53 @@ public class CouncilAddressClient(
         );
 
         request.Headers.Accept.ParseAdd(
-            "text/html,application/xhtml+xml"
+            "text/html,application/xhtml+xml," +
+            "application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
         );
-
-        request.Headers.UserAgent.ParseAdd("AKLDue/0.1");
+        request.Headers.AcceptLanguage.ParseAdd(
+            "en-NZ,en;q=0.9,en-US;q=0.8"
+        );
+        request.Headers.UserAgent.ParseAdd(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) " +
+            "Chrome/135.0.0.0 Safari/537.36"
+        );
+        request.Headers.CacheControl = new CacheControlHeaderValue
+        {
+            MaxAge = TimeSpan.Zero
+        };
+        request.Headers.Add(
+            "Upgrade-Insecure-Requests",
+            "1"
+        );
+        request.Headers.TryAddWithoutValidation(
+            "Sec-Fetch-Site",
+            "none"
+        );
+        request.Headers.TryAddWithoutValidation(
+            "Sec-Fetch-Mode",
+            "navigate"
+        );
+        request.Headers.TryAddWithoutValidation(
+            "Sec-Fetch-User",
+            "?1"
+        );
+        request.Headers.TryAddWithoutValidation(
+            "Sec-Fetch-Dest",
+            "document"
+        );
+        request.Headers.TryAddWithoutValidation(
+            "Sec-CH-UA",
+            "\"Chromium\";v=\"135\", \"Not.A/Brand\";v=\"8\""
+        );
+        request.Headers.TryAddWithoutValidation(
+            "Sec-CH-UA-Mobile",
+            "?0"
+        );
+        request.Headers.TryAddWithoutValidation(
+            "Sec-CH-UA-Platform",
+            "\"macOS\""
+        );
 
         using var response = await httpClient.SendAsync(
             request,

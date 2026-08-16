@@ -305,6 +305,7 @@ export default function ProfileScreen() {
         address: selectedAddress.address,
         propertyId: selectedAddress.propertyId,
         serviceTypes: nextTypes,
+        services: councilServices,
       });
 
       await refreshDues();

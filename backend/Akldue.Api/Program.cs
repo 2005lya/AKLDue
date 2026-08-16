@@ -481,22 +481,38 @@ app.MapPut(
             });
         }
 
-        IReadOnlyList<CollectionService> availableServices;
+        IReadOnlyList<CollectionService> availableServices =
+            request.Services?
+                .Where(service =>
+                    !string.IsNullOrWhiteSpace(service.Type) &&
+                    !string.IsNullOrWhiteSpace(service.Title) &&
+                    allowedTypes.Contains(service.Type)
+                )
+                .Select(service => new CollectionService(
+                    service.Type.Trim(),
+                    service.Title.Trim(),
+                    service.DueDate
+                ))
+                .DistinctBy(service => service.Type)
+                .ToList() ?? [];
 
-        try
+        if (availableServices.Count == 0)
         {
-            availableServices =
-                await council.GetCollectionServicesAsync(
-                    addressId,
-                    cancellationToken
+            try
+            {
+                availableServices =
+                    await council.GetCollectionServicesAsync(
+                        addressId,
+                        cancellationToken
+                    );
+            }
+            catch (HttpRequestException)
+            {
+                return Results.Problem(
+                    title: "Council service unavailable",
+                    statusCode: 503
                 );
-        }
-        catch (HttpRequestException)
-        {
-            return Results.Problem(
-                title: "Council service unavailable",
-                statusCode: 503
-            );
+            }
         }
 
         var selectedServices = availableServices
@@ -1531,7 +1547,8 @@ record SaveCouncilPropertyRequest(
     string? CouncilAddressId,
     string? Address,
     string? PropertyId,
-    IReadOnlyList<string>? ServiceTypes
+    IReadOnlyList<string>? ServiceTypes,
+    IReadOnlyList<CollectionService>? Services
 );
 
 record SaveRatesSubscriptionRequest(

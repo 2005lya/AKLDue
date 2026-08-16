@@ -202,11 +202,145 @@ export async function fetchCouncilServices(
       `${encodeURIComponent(councilId)}/services`
   );
 
-  if (!response.ok) {
-    throw new Error(`API returned ${response.status}`);
+  if (response.ok) {
+    return response.json();
   }
 
-  return response.json();
+  if (response.status === 503) {
+    return fetchCouncilServicesFromCouncil(councilId);
+  }
+
+    throw new Error(`API returned ${response.status}`);
+}
+
+async function fetchCouncilServicesFromCouncil(
+  councilId: string
+): Promise<CouncilService[]> {
+  const response = await fetch(
+    'https://www.aucklandcouncil.govt.nz/en/' +
+      'rubbish-recycling/rubbish-recycling-collections/' +
+      'rubbish-recycling-collection-days/' +
+      `${encodeURIComponent(councilId)}.html`,
+    {
+      headers: {
+        Accept:
+          'text/html,application/xhtml+xml,' +
+          'application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-NZ,en;q=0.9,en-US;q=0.8',
+        'Cache-Control': 'max-age=0',
+        'Sec-CH-UA':
+          '"Chromium";v="135", "Not.A/Brand";v="8"',
+        'Sec-CH-UA-Mobile': '?0',
+        'Sec-CH-UA-Platform': '"macOS"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+          'AppleWebKit/537.36 (KHTML, like Gecko) ' +
+          'Chrome/135.0.0.0 Safari/537.36',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Council returned ${response.status}`);
+  }
+
+  return parseCouncilServices(await response.text());
+}
+
+function parseCouncilServices(html: string): CouncilService[] {
+  const services: CouncilService[] = [];
+
+  const serviceLabels = [
+    {
+      type: 'rubbish',
+      title: 'Rubbish',
+    },
+    {
+      type: 'foodScraps',
+      title: 'Food scraps',
+    },
+    {
+      type: 'recycling',
+      title: 'Recycling',
+    },
+  ] as const;
+
+  for (const service of serviceLabels) {
+    const match = html.match(
+      new RegExp(
+        `${service.title}:[\\s\\S]{0,500}?` +
+          `children\\\\?":\\\\?"` +
+          `([A-Za-z]+, \\d{1,2} [A-Za-z]+)`,
+        'i'
+      )
+    );
+
+    if (match?.[1]) {
+      services.push({
+        type: service.type,
+        title: service.title,
+        dueDate: formatCouncilDate(match[1]),
+      });
+    }
+  }
+
+  if (services.length === 0) {
+    throw new Error('No collection services were found.');
+  }
+
+  return services;
+}
+
+function formatCouncilDate(value: string): string {
+  const [, dayText, monthText] =
+    value.match(/^[A-Za-z]+, (\d{1,2}) ([A-Za-z]+)$/) ?? [];
+
+  if (!dayText || !monthText) {
+    throw new Error(`Unknown Council date: ${value}`);
+  }
+
+  const months = [
+    'january',
+    'february',
+    'march',
+    'april',
+    'may',
+    'june',
+    'july',
+    'august',
+    'september',
+    'october',
+    'november',
+    'december',
+  ];
+
+  const month = months.indexOf(monthText.toLowerCase());
+
+  if (month < 0) {
+    throw new Error(`Unknown Council month: ${monthText}`);
+  }
+
+  const today = new Date();
+  const date = new Date(
+    today.getFullYear(),
+    month,
+    Number(dayText)
+  );
+
+  if (date < new Date(today.toDateString())) {
+    date.setFullYear(date.getFullYear() + 1);
+  }
+
+  const year = date.getFullYear();
+  const monthNumber = String(date.getMonth() + 1).padStart(2, '0');
+  const dayNumber = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${monthNumber}-${dayNumber}`;
 }
 
 export type CouncilProperty = {
@@ -222,6 +356,7 @@ export type SaveCouncilPropertyInput = {
   address: string;
   propertyId: string;
   serviceTypes: CouncilService['type'][];
+  services?: CouncilService[];
 };
 
 export async function fetchSavedCouncilProperty():
