@@ -1,17 +1,19 @@
 {
   "expo": {
-    "name": "AKLDueLearning",
-    "slug": "AKLDueLearning",
+    "name": "AKLDue",
+    "slug": "akldue",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "aklduelearning",
+    "scheme": "akldue",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "nz.akldue.app"
     },
     "android": {
+      "package": "nz.akldue.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -48,6 +50,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ae76351c-7357-444a-861b-fc4c7a4c356f"
+      }
     }
   }
 }

@@ -77,7 +77,7 @@ async function handleGoogleSignIn() {
       await startSSOFlow({
         strategy: 'oauth_google',
         redirectUrl: AuthSession.makeRedirectUri({
-          scheme: 'aklduelearning',
+          scheme: 'akldue',
           path: 'auth',
         }),
       });
