@@ -15,6 +15,7 @@ import {
 import {
   setAccessTokenProvider,
 } from '@/services/auth-session';
+import { ActivityIndicator } from 'react-native';
 
 type AuthContextValue = {
   accessToken: string | null;
@@ -80,7 +81,7 @@ if (
   !isSessionLoaded ||
   registeredSessionId !== expectedSessionId
 ) {
-  return null;
+  return <ActivityIndicator style={{ flex: 1 }} />;
 }
 
   return (
